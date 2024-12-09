@@ -1,0 +1,18 @@
+.message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.user-message {
+    background-color: #f0f0f0;
+}
+
+.bot-message {
+    background-color: #e3f2fd;
+}
+
+.source {
+    font-size: 0.9em;
+    color: #666;
+}

@@ -1,0 +1,29 @@
+{% if message.type == 'human' %}
+<div class="message user-message rounded">
+  <i class="bi bi-person-circle"></i> <b>You:</b> {{ message.content }}
+</div>
+{% else %}
+<div class="message ai bot-message rounded">
+  <i class="bi bi-robot content"></i> <b>Bot:</b> {{ message.content | safe }}
+  {% if message.source %}
+  <div class="mt-2">
+    <solid class="border-top border-2">
+      <small class="text-muted">
+        <i class="bi bi-info-circle"></i> Source:
+
+        <a
+          href="#"
+          class="source"
+          data-bs-toggle="modal"
+          data-bs-target="#filePreviewModal"
+          onclick="loadFilePreview('{{ message.source}}', '{{message.url}}')"
+        >
+          {{ message.source }}
+        </a>
+      </small>
+    </solid>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+<input hidden type="text" id="message_chat_id" value="{{ chat_id }}" />

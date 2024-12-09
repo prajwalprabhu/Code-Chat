@@ -1,0 +1,460 @@
+{% extends "base.html" %} {% block content %}
+<!-- Add a collapse toggle button outside the columns -->
+
+<button
+  class="btn btn-outline-secondary position-fixed toggle-btn"
+  style="left: 0; top: 55%; z-index: 1000"
+  type="button"
+  data-bs-toggle="collapse"
+  data-bs-target="#chat-column"
+>
+  <i class="bi bi-chevron-left" id="chatToggleIcon"></i>
+  <i class="bi bi-chat-dots"></i>
+</button>
+
+<div class="row h-100">
+  <!-- Left Panel - Make entire column collapsible -->
+  <div class="collapse show col-12 col-md-3 border-end" id="chat-column">
+    <h3><i class="bi bi-chat-dots"></i> Your Chats</h3>
+
+    <div class="new-chat-section">
+      <div class="card p-3 bg-light">
+        <h5 onclick="createNewChat()">
+          <i class="bi bi-plus-circle"></i> New Chat
+        </h5>
+      </div>
+    </div>
+    <div class="chat-list mb-3" style="height: 69vh; overflow-y: auto">
+      <table class="table table-hover">
+        <tbody id="chat-list">
+          {% for chat in chats %} {% set index = loop.index %}{% include
+          "partials/chat_row.html" with context %} {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- New Chat Section -->
+  </div>
+  <!-- Right Panel - Chat Interface -->
+  <div class="col-12 col-md-9" id="rightPanel">
+    <!-- Add this button group to the right panel header in chat.html, right after the Chat Interface heading -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2><i class="bi bi-chat-dots"></i> Chat Interface</h2>
+      <div class="dropdown">
+        <button
+          class="btn btn-outline-secondary dropdown-toggle"
+          type="button"
+          id="exportDropdown"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <i class="bi bi-download"></i> Export Chat
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+          <li>
+            <a
+              class="dropdown-item"
+              href="/export/chat?type=json"
+              download="chat_export.json"
+            >
+              <i class="bi bi-filetype-json"></i> Export as JSON
+            </a>
+          </li>
+          <li>
+            <a
+              class="dropdown-item"
+              href="/export/chat?type=csv"
+              download="chat_export.csv"
+            >
+              <i class="bi bi-filetype-csv"></i> Export as CSV
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      id="chat-container"
+      class="border rounded p-3 mb-3"
+      style="height: 70vh; overflow-y: auto"
+    >
+      {% if chat_history %} {% for message in chat_history %} {% include
+      "partials/message.html" %} {% endfor %} {% else %}
+      <p class="text-center text-muted">
+        <i class="bi bi-chat-square-text"></i> Start a conversation...
+      </p>
+      {% endif %}
+    </div>
+    <!-- Chat Input Form -->
+    <form
+      hx-post="/chat/"
+      hx-target="#chat-container"
+      hx-swap="beforeend"
+      hx-indicator="#send-form"
+      hx-on::after-request="if(event.detail.successful) { 
+          this.reset();
+          let chatId = document.getElementById('chat_id');
+          if (chatId.value=='-1'){
+            let new_chat_id = document.getElementById('message_chat_id').value;
+            chatId.setAttribute('value', new_chat_id);
+            document.getElementById('refresh-chat-list').click();
+          }
+          document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+          
+
+      }"
+      id="send-form"
+      class="mt-3"
+    >
+      <div class="input-group roun">
+        <input
+          hidden
+          type="text"
+          name="chat_id"
+          id="chat_id"
+          value="{{ chat_id }}"
+        />
+        <input
+          type="text"
+          name="query"
+          class="form-control"
+          placeholder="Ask something about your files..."
+          required
+        />
+        <button class="btn btn-primary" type="submit">
+          <span class="htmx-indicator">
+            <span
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+            ></span>
+            Thinking...
+          </span>
+          <span class="htmx-indicator-none">
+            <i class="bi bi-send"></i> Send
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="modal fade" id="filePreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-file-text"></i> <span id="filePreviewTitle"></span>
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <pre id="filePreviewContent" style="white-space: pre-wrap"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+<button
+  hidden
+  id="refresh-chat-list"
+  value="0"
+  hx-get="/chat/chats/latest"
+  hx-swap="afterbegin"
+  hx-target="#chat-list"
+/>
+<style>
+  .typing-animation {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    border: none;
+    animation: typing 3.5s steps(40, end);
+  }
+
+  /* Character typing effect */
+  @keyframes typing {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  /* Cursor blinking effect */
+  @keyframes blink-caret {
+    from,
+    to {
+      border-color: transparent;
+    }
+    50% {
+      border-color: #000;
+    }
+  }
+
+  /* For multiple lines, use this variant */
+  .typing-animation-multiline {
+    display: inline-block;
+    overflow: hidden;
+    animation: typing-multiline 4s steps(40, end);
+  }
+
+  @keyframes typing-multiline {
+    from {
+      max-height: 0;
+      opacity: 0;
+    }
+    to {
+      max-height: 1000px;
+      opacity: 1;
+    }
+  }
+  .message {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    position: relative;
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .user-message {
+    background-color: #007bff;
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+  }
+
+  .bot-message {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    margin-right: auto;
+    border-bottom-left-radius: 5px;
+  }
+
+  .message i {
+    font-size: 1.1em;
+    margin-right: 8px;
+  }
+
+  .message b {
+    margin-right: 8px;
+  }
+  .message.ai .content pre {
+    background: #f4f4f4;
+    border-radius: 4px;
+    padding: 1em;
+    overflow-x: auto;
+  }
+
+  .message.ai .content code {
+    font-family: "Courier New", Courier, monospace;
+    background: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 3px;
+  }
+
+  .message.ai .content p {
+    margin-bottom: 1em;
+  }
+
+  .message.ai .content ul,
+  .message.ai .content ol {
+    margin-left: 2em;
+    margin-bottom: 1em;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .message {
+      max-width: 90%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .user-message,
+    .bot-message {
+      margin-left: 5%;
+      margin-right: 5%;
+    }
+  }
+
+  #leftPanel {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #leftPanel.collapse:not(.show) + #rightPanel {
+    flex: 0 0 100%;
+    max-width: 100%;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .toggle-btn {
+    transition: all 0.5s ease;
+  }
+
+  .htmx-indicator {
+    opacity: 0;
+    transition: opacity 500ms ease-in;
+    display: none;
+  }
+  .htmx-request .htmx-indicator {
+    opacity: 1;
+    display: inline-block;
+  }
+  .htmx-request .htmx-indicator-none {
+    opacity: 0;
+    display: none;
+  }
+  .chat-item,
+  .file-item {
+    transition: all 0.3s ease;
+    transform-origin: left;
+  }
+
+  .chat-item:hover {
+    transform: translateX(10px);
+    background-color: #f8f9fa;
+  }
+  .file-item:hover {
+    /* magnify */
+    transform: scale(1.05);
+  }
+  @keyframes slideIn {
+    from {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate__fadeIn {
+    animation: slideIn 1s ease forwards;
+  }
+</style>
+
+<script>
+  function handleWidth(isShow) {
+    const classNamePattern = /col-md-\d+/;
+    const rightPanel = document.getElementById("rightPanel");
+
+    if (!rightPanel) return; // Return early if rightPanel is not found
+
+    const classes = rightPanel.className.split(" ");
+    const existingClasses = classes.filter((c) => classNamePattern.test(c));
+    const newClasses = classes.filter((c) => !classNamePattern.test(c));
+
+    // Check for existing col-md class
+    if (existingClasses.length === 1) {
+      const existingClass = existingClasses[0];
+
+      if (isShow) {
+        if (existingClass === "col-md-9") {
+          newClasses.push("col-md-6");
+        } else if (existingClass === "col-md-12") {
+          newClasses.push("col-md-9");
+        }
+      } else {
+        if (existingClass === "col-md-6") {
+          console.log("matched");
+          newClasses.push("col-md-9");
+        } else if (existingClass === "col-md-9") {
+          newClasses.push("col-md-12");
+        }
+      }
+    }
+
+    // Set the updated class name
+    rightPanel.className = newClasses.join(" ");
+    console.log(newClasses);
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    const fileToggleIcon = document.getElementById("fileToggleIcon");
+    const chatToggleIcon = document.getElementById("chatToggleIcon");
+    const chatColumn = document.getElementById("chat-column");
+    const fileColumn = document.getElementById("file-column");
+    chatColumn.addEventListener("show.bs.collapse", function () {
+      handleWidth(true);
+    });
+    chatColumn.addEventListener("shown.bs.collapse", function () {
+      chatToggleIcon.classList.remove("bi-chevron-right");
+      chatToggleIcon.classList.add("bi-chevron-left");
+    });
+
+    chatColumn.addEventListener("hidden.bs.collapse", function () {
+      chatToggleIcon.classList.remove("bi-chevron-left");
+      chatToggleIcon.classList.add("bi-chevron-right");
+      handleWidth(false);
+    });
+    fileColumn.addEventListener("show.bs.collapse", function () {
+      handleWidth(true);
+    });
+    fileColumn.addEventListener("shown.bs.collapse", function () {
+      fileToggleIcon.classList.remove("bi-chevron-right");
+      fileToggleIcon.classList.add("bi-chevron-left");
+    });
+
+    fileColumn.addEventListener("hidden.bs.collapse", function () {
+      fileToggleIcon.classList.remove("bi-chevron-left");
+      fileToggleIcon.classList.add("bi-chevron-right");
+      handleWidth(false);
+    });
+  });
+
+  function loadFilePreview(filename, fileUrl) {
+    document.getElementById("filePreviewTitle").textContent = filename;
+    const previewContent = document.getElementById("filePreviewContent");
+    previewContent.innerHTML =
+      '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
+
+    fetch(fileUrl)
+      .then((response) => {
+        if (filename.toLowerCase().endsWith(".pdf")) {
+          return response.blob().then((blob) => {
+            const objectUrl = URL.createObjectURL(blob);
+            previewContent.innerHTML = `<embed src="${objectUrl}" type="application/pdf" width="100%" height="600px">`;
+          });
+        } else if (filename.toLowerCase().endsWith(".docx")) {
+          return response.text().then((content) => {
+            // For DOCX files, we'll display the extracted text
+            // The backend should handle the conversion of DOCX to text
+            previewContent.innerHTML = `<div class="p-3">${content}</div>`;
+          });
+        }
+        return response.text();
+      })
+      .then((content) => {
+        if (!filename.endsWith(".pdf") && !filename.endsWith(".docx")) {
+          previewContent.textContent = content;
+        }
+      })
+      .catch((error) => {
+        previewContent.textContent = "Error loading file: " + error.message;
+      });
+  }
+  function createNewChat() {
+    document.getElementById(
+      "chat-container"
+    ).innerHTML = `<p class="text-center text-muted">
+        <i class="bi bi-chat-square-text"></i> Start a conversation...
+      </p>`;
+    document.getElementById("chat_id").setAttribute("value", "-1");
+  }
+</script>
+
+{% endblock %}

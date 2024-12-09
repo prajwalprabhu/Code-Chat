@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Upload Files</h2>
+
+<!-- File Upload Form -->
+<form action="/upload-file" method="post" enctype="multipart/form-data" class="mb-4">
+    <div class="mb-3">
+        <input type="file" name="file" class="form-control" required>
+    </div>
+    <button class="btn btn-primary">Upload File</button>
+</form>
+
+<!-- Display Uploaded Files -->
+<h3>Uploaded Files</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Filename</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for file in files %}
+        <tr>
+            <td>{{ file.filename }}</td>
+            <td>
+                <form action="/delete-file" method="post" style="display: inline;">
+                    <input type="hidden" name="file_id" value="{{ file.id }}">
+                    <button class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

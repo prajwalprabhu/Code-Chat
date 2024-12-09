@@ -1,0 +1,27 @@
+<tr class="chat-item" style="animation-delay: {{ index * 0.2 }}s">
+  <td
+    hx-get="/chat/{{ chat.id }}"
+    hx-target="#chat-container"
+    hx-swap="innerHTML"
+    hx-on::after-request="if(event.detail.successful) {
+        document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+        document.getElementById('chat_id').setAttribute('value', '{{ chat.id }}');
+    }"
+  >
+    <i class="bi bi-chat-text text-primary"></i>
+    <span class="ms-2 typing-animation text-wrap">{{ chat.title }}</span>
+    <small class="text-muted d-block">
+      {{ chat.created_at.strftime('%Y-%m-%d %H:%M') }}
+    </small>
+  </td>
+  <td class="text-end">
+    <button
+      class="btn btn-sm btn-link text-danger"
+      hx-delete="/chat/{{ chat.id }}"
+      hx-target="closest tr"
+      hx-swap="outerHTML"
+    >
+      <i class="bi bi-trash"></i>
+    </button>
+  </td>
+</tr>

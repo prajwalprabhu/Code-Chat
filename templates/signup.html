@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card shadow-sm mt-5">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4">
+            <i class="bi bi-person-plus-fill"></i> Sign Up
+          </h2>
+          <form method="post" action="/signup">
+            <div class="mb-3">
+              <label for="username" class="form-label">
+                <i class="bi bi-person"></i> Username
+              </label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">
+                <i class="bi bi-lock"></i> Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-control"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="bi bi-check-circle"></i> Create Account
+            </button>
+          </form>
+          <!-- Add this after the form -->
+          {% if error %}
+          <div class="alert alert-danger mt-3">
+            <i class="bi bi-exclamation-triangle"></i> {{ error }}
+          </div>
+          {% endif %}
+          <div class="text-center mt-3">
+            <a href="/login" class="text-decoration-none">
+              <i class="bi bi-arrow-left"></i> Back to Login
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
