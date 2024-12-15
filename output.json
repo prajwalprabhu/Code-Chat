@@ -1,0 +1,36 @@
+{
+    "docs": [
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/routes/upload.py",
+            "content": "else:\n            new_vectorstore = FAISS.from_texts([\"dummy\"], embeddings_model)\n            new_vectorstore.save_local(embeddings_path)\n    if os.path.exists(file.file_path):\n        os.remove(file.file_path)\n    db.delete(file)\n    db.commit()"
+        },
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/test.txt",
+            "content": "asdasd\\\\\n\n\nasdlkjasdk\nadasdasd\n\n\nasdasda\n\nasd\n\nadasdasdd\nasdasddas\nd\n\n    DOCUMENTS_FOLDER = \"/Users/tprajwalprabhu/Documents/Project/File Chat\""
+        },
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/routes/upload.py",
+            "content": "return templates.TemplateResponse(\n        \"file_list.html\", {\"request\": request, \"files\": uploaded_files}\n    )\n\n\n@router.delete(\"/\", response_class=HTMLResponse)\ndef delete_file(\n    file_id: int = Form(...),\n    db: Session = Depends(get_db),\n    user_id: int = Depends(get_current_user),\n):\n    embeddings_model = CachedOpenAIEmbeddings(api_key=os.getenv(\"OPENAI_API_KEY\"))\n    file = db.query(File).filter(File.id == file_id, File.user_id == user_id).first()\n    if not file:\n        return \"\"\n\n    # Delete physical file\n\n    # Load and update FAISS index\n    embeddings_path = str(file.embeddings_path)"
+        },
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/templates/upload.html",
+            "content": "<!-- Display Uploaded Files -->\n<h3>Uploaded Files</h3>\n<table class=\"table table-bordered\">\n    <thead>\n        <tr>\n            <th>Filename</th>\n            <th>Actions</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for file in files %}\n        <tr>\n            <td>{{ file.filename }}</td>\n            <td>\n                <form action=\"/delete-file\" method=\"post\" style=\"display: inline;\">\n                    <input type=\"hidden\" name=\"file_id\" value=\"{{ file.id }}\">\n                    <button class=\"btn btn-danger btn-sm\">Delete</button>\n                </form>\n            </td>\n        </tr>\n        {% endfor %}\n    </tbody>\n</table>\n{% endblock %}"
+        },
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/templates/partials/file_row.html",
+            "content": "hx-confirm=\"Are you sure you want to delete this file?\"\n                hx-indicator=\"#delete-indicator-{{ file.id }}\"\n                style=\"display: inline\"\n                class=\"delete-form\"\n        >\n            <input type=\"hidden\" name=\"file_id\" value=\"{{ file.id }}\"/>\n            <button type=\"submit\" class=\"btn btn-outline-danger\">\n                <span class=\"htmx-indicator\" id=\"delete-indicator-{{ file.id }}\">\n                  <span class=\"spinner-border spinner-border-sm\" role=\"status\"></span>\n                </span>\n                <span class=\"htmx-indicator-none\">\n                  <i class=\"bi bi-trash\"></i>\n                </span>\n            </button>\n        </form>\n    </div>\n</div>"
+        },
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/routes/upload.py",
+            "content": "else:\n            new_vectorstore = FAISS.from_texts([\"dummy\"], embeddings_model)\n            new_vectorstore.save_local(embeddings_path)\n    if os.path.exists(file.file_path):\n        os.remove(file.file_path)\n    db.delete(file)\n    db.commit()"
+        },
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/templates/partials/file_row.html",
+            "content": "<div class=\"file-item\">\n    <div>\n        <i class=\"bi bi-file-text\"></i>\n        <a\n                href=\"#\"\n                data-bs-toggle=\"modal\"\n                data-bs-target=\"#filePreviewModal\"\n                class=\"typing-animation text-wrap\"\n                onclick=\"loadFilePreview('{{ file.filename }}', '/{{ file.file_path }}')\"\n        >\n            {{ file.filename }}\n        </a>\n    </div>\n    <div class=\"text-end\">\n        <form\n                hx-delete=\"/upload\"\n                hx-target=\"closest div.file-item\"\n                hx-swap=\"outerHTML\"\n                hx-confirm=\"Are you sure you want to delete this file?\"\n                hx-indicator=\"#delete-indicator-{{ file.id }}\"\n                style=\"display: inline\"\n                class=\"delete-form\"\n        >"
+        },
+        {
+            "source": "/Users/tprajwalprabhu/Documents/Project/Custom Chats/test.txt",
+            "content": "asdasd\\\\\n\n\nasdlkjasdk\nadasdasd\n\n\nasdasda\n\nasd\n\nadasdasdd\nasdasddas\nd\n\n    DOCUMENTS_FOLDER = \"/Users/tprajwalprabhu/Documents/Project/File Chat\""
+        }
+    ]
+}

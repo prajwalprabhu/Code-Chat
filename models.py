@@ -64,6 +64,7 @@ class ChatMessage(Base):
     chat_id = Column(Integer, ForeignKey("chats.id"))
     type = Column(String)  # 'human' or 'ai'
     content = Column(Text)
+    rephrased_question = Column(Text)
     source_file = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
